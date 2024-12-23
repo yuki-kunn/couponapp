@@ -8,7 +8,7 @@
     font-weight: 700;
     line-height: 112px;
     margin-top: 184px;
-    margin-bottom: 89px;
+    margin-bottom: 171px;
 }
 .buttonLayout{
     display: block;
@@ -35,6 +35,7 @@
 
 <div class="home">
     <h1 class="title">未定</h1>
+    <!--あとでパスを変更する-->
     <a href="../" class="buttonLayout registCoupon">クーポン登録</a>
     <a href="../" class="buttonLayout summaryCoupon">クーポン一覧</a>
 </div>
