@@ -11,7 +11,8 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format": "prettier --write .",
 		"lint": "prettier --check .",
-		"firebase": "firebase"
+		"firebase": "firebase",
+		"sync": "svelte-kit sync"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^3.3.1",
@@ -30,6 +31,7 @@
 	"dependencies": {
 		"@tailwindcss/typography": "^0.5.15",
 		"firebase": "^11.1.0",
-		"svelte": "^5.15.0"
+		"svelte": "^5.15.0",
+		"tesseract.js": "^5.1.1"
 	}
 }
