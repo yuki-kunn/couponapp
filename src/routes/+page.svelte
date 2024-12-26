@@ -1,64 +1,30 @@
 <script lang="ts">
-	import {
-		addDoc,
-		collection,
-		onSnapshot,
-		query,
-		QuerySnapshot,
-		orderBy,
-		deleteDoc,
-		doc
-	} from 'firebase/firestore';
-	import { db } from '$lib/firebase';
+	let imageFile: HTMLInputElement;
 
-	type Item = {
-		id?: string;
-		name: string;
-	};
+	async function handleUpload() {
+		if (!imageFile.files?.[0]) {
+			alert('画像を選択してください！');
+			return;
+		}
 
-	let itemName: string = '';
-	let wishList: Item[] = [];
+		const formData = new FormData();
+		formData.append('image', imageFile.files[0]);
 
-	function addItem() {
-		if (itemName == '') return;
-		const item: Item = {
-			name: itemName
-		};
-		addDoc(collection(db, 'wishlist'), item);
-		itemName = '';
-	}
-
-	function delItem(item: Item) {
-		if (!item.id) return;
-		deleteDoc(doc(db, 'wishlist', item.id));
-	}
-	onSnapshot(query(collection(db, 'wishlist')), (snapshot: QuerySnapshot): any => {
-		wishList = snapshot.docs.map((doc) => {
-			const data = doc.data();
-			const item: Item = {
-				id: doc.id,
-				name: data.name
-			};
-			return item;
+		const response = await fetch('/api/upload', {
+			method: 'POST',
+			body: formData
 		});
-	});
+
+		if (response.ok) {
+			const data = await response.json();
+			alert(`認識されたテキスト: ${data.text}`);
+		} else {
+			alert('画像処理に失敗しました。');
+		}
+	}
 </script>
 
-<!-- ここにHTMLを記述 -->
-<section>
-	<div>
-		<h1>✅ Wish List</h1>
-		<div>
-			<input type="text" bind:value={itemName} />
-			<button on:click={addItem}>Add Item</button>
-		</div>
-		<ul>
-			{#each wishList as item}
-				<li>
-					<p><span>✔</span><span>{item.name}</span></p>
-					<button on:click={() => delItem(item)}>🗑️</button>
-				</li>
-			{/each}
-		</ul>
-	</div>
-</section>
+<form on:submit|preventDefault={handleUpload}>
+	<input type="file" accept="image/*" bind:this={imageFile} />
+	<button type="submit">アップロードして処理</button>
+</form>
