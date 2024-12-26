@@ -10,7 +10,7 @@
 		const formData = new FormData();
 		formData.append('image', imageFile.files[0]);
 
-		const response = await fetch('/api/upload', {
+		const response = await fetch('/api', {
 			method: 'POST',
 			body: formData
 		});
