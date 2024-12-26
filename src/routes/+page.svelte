@@ -2,7 +2,7 @@
 	<h1 class="title">未定</h1>
 	<!--あとでパスを変更する-->
 	<a href="/upload" class="buttonLayout registCoupon">クーポン登録</a>
-	<a href="../" class="buttonLayout summaryCoupon">クーポン一覧</a>
+	<a href="/coupons" class="buttonLayout summaryCoupon">クーポン一覧</a>
 </div>
 
 <style>
