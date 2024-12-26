@@ -59,7 +59,6 @@
 				throw new Error(`HTTPエラー: ${response.status}`);
 			}
 
-			// 保存成功後にリダイレクト
 			window.location.href = '/success';
 		} catch (error) {
 			errorMessage = '保存に失敗しました。';
@@ -73,43 +72,92 @@
 		<p class="error">{errorMessage}</p>
 	{:else if latestCoupon}
 		<h2>クーポン詳細</h2>
-=======
+
+		<p class="topic">名前</p>
+		<input
+			type="text"
+			class="title"
+			bind:value={editedData.名前}
+			placeholder="名前を入力してください"
+		/>
+
+		<p class="topic">クーポン内容</p>
+		<input
+			type="text"
+			class="title"
+			bind:value={editedData.クーポン内容}
+			placeholder="クーポン内容を入力してください"
+		/>
+
+		<p class="topic">期限</p>
+		<input
+			type="text"
+			class="title"
+			bind:value={editedData.クーポン期限}
+			placeholder="有効期限を入力してください"
+		/>
+
+		<p class="topic">画像</p>
+		{#if latestCoupon.imagePath}
+			<div class="image-container">
+				<img src={latestCoupon.imagePath} alt="coupon" />
+			</div>
+		{/if}
+
+		<button class="save-button" on:click={saveEditedData}>保存</button>
+	{:else}
+		<p>クーポン情報を読み込み中...</p>
+	{/if}
+</div>
+
 <style>
-    hr{ 
-        height: 5px;
-        background-color: black;
-    }
-    .topic{
-        font-family: Inter;
-        font-size: 24px;
-        font-weight: 600;
-        text-align: left;
-        padding: 16px 10px 16px 10px;
-    }
-    .title{
-        dispaly:block;
-        font-family: Inter;
-        font-size: 24px;
-        font-weight: 600;
-        text-align: center;
-        padding: 11px 10px 11px 10px;
-        width: 100%;
-    }
-    .regist{
-        display: block;
-        font-family: Inter;
-        font-size: 48px;
-        font-weight: 600;
-        color: white;
-        width: 219px;
-        height: 67px;
-        margin: 26px auto auto auto;
-        gap: 8px;
-        border-radius: 6px;
-        border-style: none;
-        background: #7749F8;
-        padding: 0;
-    }
+	.container {
+		max-width: 390px;
+		margin: 0 auto;
+		padding: 16px;
+		box-sizing: border-box;
+	}
+
+	.title {
+		display: block;
+		width: 100%;
+		font-family: Inter, sans-serif;
+		font-size: 16px;
+		padding: 12px;
+		margin-bottom: 16px;
+		border: 1px solid #ccc;
+		border-radius: 6px;
+		box-sizing: border-box;
+	}
+
+	.save-button {
+		display: block;
+		width: 100%;
+		padding: 12px;
+		background-color: #5227cc;
+		color: white;
+		font-size: 18px;
+		font-weight: bold;
+		border: none;
+		border-radius: 6px;
+		cursor: pointer;
+	}
+
+	.error {
+		color: red;
+		text-align: center;
+		margin-top: 16px;
+	}
+
+	.image-container {
+		text-align: center;
+		margin-bottom: 16px;
+	}
+
+	.image-container img {
+		max-width: 100%; /* コンテナの幅に収まる */
+		height: auto; /* アスペクト比を維持 */
+		border-radius: 8px; /* 角を丸くする */
+		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 視覚的に分離 */
+	}
 </style>
-
-
