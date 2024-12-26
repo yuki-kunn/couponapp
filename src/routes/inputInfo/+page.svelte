@@ -30,7 +30,9 @@
         margin: 26px auto auto auto;
         gap: 8px;
         border-radius: 6px;
-        background: #5227CC;
+        border-style: none;
+        background: #7749F8;
+        padding: 0;
     }
 </style>
 
