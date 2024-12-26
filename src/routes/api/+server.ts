@@ -1,19 +1,20 @@
 import { initializeApp, getApps } from 'firebase/app';
 import { getFirestore, collection, addDoc } from 'firebase/firestore';
 import OpenAI from 'openai';
-import { json, redirect } from '@sveltejs/kit';
+import { json } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 import Tesseract from 'tesseract.js';
+import * as path from 'path';
+import * as fs from 'fs';
 
 // Firebaseの初期化
 const firebaseConfig = {
-    apiKey: "AIzaSyD8wzIs2Zdrl3Q3gzseAqQkmw-xtKBI1Rw",
-    authDomain: "hackthon20241227.firebaseapp.com",
-    projectId: "hackthon20241227",
-    storageBucket: "hackthon20241227.firebasestorage.app",
-    messagingSenderId: "980992507739",
-    appId: "1:980992507739:web:388de63a10fec30dd6e47e",
-    measurementId: "G-X1XF1NCNET"
+    apiKey: env.FIREBASE_API_KEY,
+    authDomain: env.FIREBASE_AUTH_DOMAIN,
+    projectId: env.FIREBASE_PROJECT_ID,
+    storageBucket: env.FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: env.FIREBASE_MESSAGING_SENDER_ID,
+    appId: env.FIREBASE_APP_ID,
 };
 
 let app;
@@ -39,20 +40,23 @@ export async function POST({ request }) {
             return json({ error: '画像が送信されていません' }, { status: 400 });
         }
 
-        // Blobを適切な形式に変換
-        const arrayBuffer = await file.arrayBuffer();
-        const uint8Array = new Uint8Array(arrayBuffer);
-
         // サポートされている画像形式かチェック
         if (!file.type.startsWith('image/')) {
             return json({ error: '画像形式が無効です' }, { status: 400 });
         }
 
+        // Blobを直接Tesseractに渡す前に、ArrayBufferに変換
+        const arrayBuffer = await file.arrayBuffer();
+        const uint8Array = new Uint8Array(arrayBuffer);
         const ocrResult = await Tesseract.recognize(uint8Array, 'jpn', {
             logger: info => console.log(info)
         });
 
-        const recognizedText = ocrResult.data.text;  // OCRの結果を変数に保存
+        const recognizedText = ocrResult.data.text.trim();  // OCRの結果を変数に保存
+
+        if (!recognizedText) {
+            return json({ error: 'OCRによるテキスト認識に失敗しました' }, { status: 400 });
+        }
 
         // OpenAI APIを使用してJSON形式に変換
         const prompt = `
@@ -76,17 +80,47 @@ export async function POST({ request }) {
             return json({ error: 'AIからの応答が無効です' }, { status: 500 });
         }
 
-        const parsedData = JSON.parse(jsonResponse);
+        let parsedData;
+        try {
+            parsedData = JSON.parse(jsonResponse);
+        } catch (error) {
+            return json({ error: 'AIの応答をJSONに解析できませんでした' }, { status: 500 });
+        }
+
+        // 画像保存先ディレクトリをstatic内に設定
+        const uploadDir = path.join('static', 'uploads');
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+
+        // 画像をstatic/uploadsディレクトリに保存
+        const imagePath = path.join(uploadDir, Date.now() + '.jpg'); // 保存先
+        const buffer = Buffer.from(await file.arrayBuffer());
+        fs.writeFileSync(imagePath, buffer);
+
+        // 画像の相対パスを返す（staticを排除）
+        const relativeImagePath = `/uploads/${path.basename(imagePath)}`;
 
         // Firebaseに保存
         const docRef = await addDoc(collection(db, 'recognized-texts'), {
-            originalText: recognizedText,
+            imagePath: relativeImagePath,
             jsonData: parsedData,
             createdAt: new Date(),
         });
 
-        return redirect(303, '/inputinfo');
-
+        return json(
+            {
+                success: true,
+                id: docRef.id,
+                data: parsedData,
+                imagePath: relativeImagePath
+            },
+            {
+                headers: {
+                    'Location': '/inputInfo'
+                }
+            }
+        );
     } catch (error) {
         console.error('サーバーエラー:', error);
         return json({ error: 'サーバーエラーが発生しました' }, { status: 500 });
